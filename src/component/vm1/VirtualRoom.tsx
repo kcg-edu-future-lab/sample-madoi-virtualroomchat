@@ -1,32 +1,29 @@
-
 import { RefObject, useEffect, useRef } from "react";
-import { GetState, Madoi, SetState, Share } from "../lib/madoi";
+import { GetState, Madoi, SetState, Share } from "../../lib/madoi";
 import VirtualRoomDefaultBackground from "./VirtualRoomDefaultBackground.png"
 import { Circle, Container, G, Image, SVG, Text } from "@svgdotjs/svg.js";
 import '@svgdotjs/svg.draggable.js'
-import { computeIfAbsentMap } from "../lib/Util";
-import { LocalStorage } from "../lib/Storage";
+import { computeIfAbsentMap } from "../../lib/Util";
+import { LocalJsonStorage } from "../../lib/LocalJsonStorage";
 
 let i = 0;
 interface Props{
     madoi?: Madoi;
     background?: string;
 }
-export default function VirtualRoom({madoi, background=VirtualRoomDefaultBackground}: Props){
+export function VirtualRoom({madoi, background=VirtualRoomDefaultBackground}: Props){
     const svg = useRef<SVGSVGElement>(null);
     const nameInput = useRef<HTMLInputElement>(null);
     const nameChangeButton = useRef<HTMLButtonElement>(null);
 
-    const ls = new LocalStorage();
     useEffect(()=>{
         if(!madoi) return;
         if(!svg.current || !nameInput.current || !nameChangeButton.current) return;
-        console.log(`VitualRoom useEffectOnce. ${i++}`);
-        const name = ls.get("name", "匿名");
+        console.log(`vm1.VitualRoom useEffectOnce. ${i++}`);
 
         const vrm = madoi.register(new VirtualRoomManager(svg.current));
-        madoi.on("enterRoom", ({self: {id}})=>{
-            vrm.createSelfAvator(id, name, Math.random() * 300 + 20, Math.random() * 300 + 20);
+        madoi.addEventListener("enterRoomAllowed", ({detail: {selfPeer: {id, profile}}})=>{
+            vrm.createSelfAvator(id, profile.name, Math.random() * 300 + 20, Math.random() * 300 + 20);
         });
         window.onbeforeunload = function () {
             vrm.deleteSelfAvator();
@@ -79,7 +76,7 @@ class VirtualRoomManager{
 
     @Share({ type: "afterExec", maxLog: 1000 })
     newAvator(id: string, name: string, x: number, y: number) {
-        console.log(`newAvator(${id}, ${name}, ${x}, ${y})`);
+        console.log(`vm1.VirtualRoomManager.newAvator(${id}, ${name}, ${x}, ${y})`);
         const thisId = id;
         const avator = computeIfAbsentMap(
             this.avators,
@@ -100,7 +97,7 @@ class VirtualRoomManager{
     @Share({ type: "afterExec", maxLog: 1000 })
     deleteAvator(id: string): void{
         if(id == this.selfId) return;
-        console.log(`delete Avator: ${id}`);
+        console.log(`vm1.VirtualRoomManager.deleteAvator: ${id}`);
         const avator = this.avators.get(id);
         if (!avator) return;
         this.avators.delete(id);
@@ -111,7 +108,7 @@ class VirtualRoomManager{
     setName(id: string, name: string) {
         const a = this.avators.get(id);
         a?.setName(name);
-        console.log(`id: ${id}, name: ${name}`);
+        console.log(`vm1.VirtualRoomManager.setName: id: ${id}, name: ${name}`);
     }
 
     @Share({ type: "afterExec", maxLog: 1000 })
@@ -130,7 +127,7 @@ class VirtualRoomManager{
 
     @GetState({ maxInterval: 10000, maxUpdates: 1000})
     getState(): string {
-        console.log("Scene.getState() called.");
+        console.log("vm1.VirtualRoomManager.getState() called.");
         const ret = [];
         for (const [key, value] of this.avators) {
             const a: Avator = value;
@@ -144,8 +141,7 @@ class VirtualRoomManager{
 
     @SetState()
     setState(state: string) {
-        console.log("Scene.setState() called.");
-        console.log(state);
+        console.log("vm1.VirtualRoomManager.setState() called.", state);
         const s = JSON.parse(state);
         for (const element of s) {
             if ("id" in element) {
@@ -154,7 +150,7 @@ class VirtualRoomManager{
                         return new Avator(this.container, element["id"], element["name"]);
                     }
                 );
-                console.log(`${element["id"]}: ${element['x']},${element['y']}`)
+                console.log(`vm1.VirtualRoomManager.setState: ${element["id"]}: ${element['x']},${element['y']}`)
                 a.setPosition(element["x"], element["y"]);
                 a.setName(element["name"]);
             } else {
