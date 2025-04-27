@@ -35,7 +35,6 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
 
     @EnterRoomAllowed()
     protected enterRoomAllowed({selfPeer, otherPeers}: EnterRoomAllowedDetail){
-        console.log(`enterRoomAllowed. self: ${selfPeer.id}, others: ${otherPeers.map(p=>p.id)}`);
         this.self = this.createAvatarFromPeer(selfPeer, "#0fa");
         this.self.addEventListener("nameChanged", ({detail: {name}})=>{
             this.dispatchCustomEvent("selfNameChanged", {name});
@@ -50,13 +49,11 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
 
     @PeerEntered()
     protected peerEntered({peer: p}: PeerEnteredDetail){
-        console.log(`peerEntered. ${p.id}`);
         this.others.set(p.id, this.createAvatarFromPeer(p, "#99aaFF"));
     }
 
     @PeerProfileUpdated()
     protected peerProfileUpdated(d: PeerProfileUpdatedDetail){
-        console.log(`peerProfileUpdated. ${JSON.stringify(d)}`);
         const peer = this.others.get(d.peerId);
         if(!peer || !d.updates) return;
         if(d.updates["name"]) peer.name = d.updates["name"];
@@ -68,7 +65,6 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
 
     @PeerLeaved()
     protected peerLeaved({peerId}: PeerLeavedDetail){
-        console.log(`peerLeaved. ${peerId}`);
         this.others.delete(peerId);
     }
 

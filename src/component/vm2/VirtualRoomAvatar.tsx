@@ -14,7 +14,6 @@ interface VirtualRoomAvatarProps{
     avatar: VirtualRoomAvatarModel;
 }
 export function VirtualRoomSelfAvatar({avatar}: VirtualRoomAvatarProps){
-    console.log(`renter vm2.VirtualRoomSelfAvatar: ${avatar.id}`);
     const gr = useRef<SVGGElement>(null!);
     const drag = useRef<DragState | null>(null);
     const onPointerDown = (e: PointerEvent<SVGGElement>)=>{
@@ -39,9 +38,7 @@ export function VirtualRoomSelfAvatar({avatar}: VirtualRoomAvatarProps){
     </g>;
 }
 export function VirtualRoomAvatar({avatar}: VirtualRoomAvatarProps){
-    console.log(`renter vm2.VirtualRoomAvatar: ${avatar.id}`);
-    const gr = useRef<SVGGElement>(null!);
-    return <g ref={gr} transform={`translate(${avatar.x} ${avatar.y})`}>
+    return <g transform={`translate(${avatar.x} ${avatar.y})`}>
         <circle r={24} fill={avatar.color}></circle>
         <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>
     </g>;

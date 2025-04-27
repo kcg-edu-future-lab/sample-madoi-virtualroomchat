@@ -11,7 +11,6 @@ interface Props{
     background?: string;
 }
 export function VirtualRoom({selfName, background=VirtualRoomDefaultBackground, vrm}: Props){
-    console.log(`render vm2.VirtualRoom: self: ${vrm.selfPeer?.id}, others: ${vrm.otherPeers.map(p=>p.id)}`);
     const [name, setName] = useState(selfName);
     const svg = useRef<SVGSVGElement>(null);
     const nameInput = useRef<HTMLInputElement>(null);

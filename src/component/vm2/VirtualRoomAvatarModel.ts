@@ -14,8 +14,6 @@ export class VirtualRoomAvatarModel extends TypedEventTarget<VirtualRoomAvatarMo
     constructor(private _id: string, private _name: string,
             private _color: string, private _x: number, private _y: number){
         super();
-        // other: "#99aaFF"
-        // self: "#0fa"
     }
     get id(){
         return this._id;
@@ -24,7 +22,6 @@ export class VirtualRoomAvatarModel extends TypedEventTarget<VirtualRoomAvatarMo
         return this._name;
     }
     set name(name: string){
-        console.log("nameChanged: " + name);
         this._name = name;
         this.dispatchCustomEvent("nameChanged", {name});
     }
@@ -33,12 +30,14 @@ export class VirtualRoomAvatarModel extends TypedEventTarget<VirtualRoomAvatarMo
     }
     set x(x: number){
         this._x = x;
+        this.dispatchCustomEvent("positionChanged", {x: this._x, y: this._y});
     }
     get y(){
         return this._y;
     }
     set y(y: number){
         this._y = y;
+        this.dispatchCustomEvent("positionChanged", {x: this._x, y: this._y});
     }
     get color(){
         return this._color;
