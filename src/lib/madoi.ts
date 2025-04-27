@@ -549,15 +549,15 @@ export class Madoi extends TypedEventTarget<Madoi, {
 	private sharedMethods = new Map<string, MethodEntry>();
 
 	// annotated methods
-	private getStateMethods = new Map<number, {method: Function, config: GetStateConfig, lastGet: number}>();
-	private setStateMethods = new Map<number, Function>(); // objectId -> @SetState method
-	private enterRoomAllowedMethods = new Map<number, (detail: EnterRoomAllowedDetail)=>void>();
-	private enterRoomDeniedMethods = new Map<number, (detail: EnterRoomDeniedDetail)=>void>();
-	private leaveRoomDoneMethods = new Map<number, ()=>void>();
-	private roomProfileUpdatedMethods = new Map<number, (detail: RoomProfileUpdatedDetail)=>void>();
-	private peerEnteredMethods = new Map<number, (detail: PeerEnteredDetail)=>void>();
-	private peerLeavedMethods = new Map<number, (detail: PeerLeavedDetail)=>void>();
-	private peerProfileUpdatedMethods = new Map<number, (detail: PeerProfileUpdatedDetail)=>void>();
+	private getStateMethods = new Map<number, {method: (madoi: Madoi)=>any, config: GetStateConfig, lastGet: number}>();
+	private setStateMethods = new Map<number, (state: any, madoi: Madoi)=>void>(); // objectId -> @SetState method
+	private enterRoomAllowedMethods = new Map<number, (detail: EnterRoomAllowedDetail, madoi: Madoi)=>void>();
+	private enterRoomDeniedMethods = new Map<number, (detail: EnterRoomDeniedDetail, madoi: Madoi)=>void>();
+	private leaveRoomDoneMethods = new Map<number, (madoi: Madoi)=>void>();
+	private roomProfileUpdatedMethods = new Map<number, (detail: RoomProfileUpdatedDetail, madoi: Madoi)=>void>();
+	private peerEnteredMethods = new Map<number, (detail: PeerEnteredDetail, madoi: Madoi)=>void>();
+	private peerLeavedMethods = new Map<number, (detail: PeerLeavedDetail, madoi: Madoi)=>void>();
+	private peerProfileUpdatedMethods = new Map<number, (detail: PeerProfileUpdatedDetail, madoi: Madoi)=>void>();
 
 	private url: string;
 	private ws: WebSocket | null = null;
@@ -686,7 +686,7 @@ export class Madoi extends TypedEventTarget<Madoi, {
 		} else if(msg.type === "EnterRoomAllowed"){
 			const m: EnterRoomAllowedDetail = msg as EnterRoomAllowed;
 			for(const [_, f] of this.enterRoomAllowedMethods){
-				f(m);
+				f(m, this);
 			}
 			this.room = msg.room;
 			this.selfPeer.order = msg.selfPeer.order;
@@ -702,12 +702,12 @@ export class Madoi extends TypedEventTarget<Madoi, {
 			const m = msg as EnterRoomDenied;
 			const d: EnterRoomDeniedDetail = m;
 			for(const [_, f] of this.enterRoomDeniedMethods){
-				f(d);
+				f(d, this);
 			}
 			this.dispatchCustomEvent("enterRoomDenied", d);
 		} else if(msg.type == "LeaveRoomDone"){
 			for(const [_, f] of this.leaveRoomDoneMethods){
-				f();
+				f(this);
 			}
 			this.dispatchCustomEvent("leaveRoomDone");
 		} else if(msg.type === "UpdateRoomProfile"){
@@ -719,20 +719,20 @@ export class Madoi extends TypedEventTarget<Madoi, {
 				delete this.room.profile[key];
 			}
 			for(const [_, f] of this.roomProfileUpdatedMethods){
-				f(m);
+				f(m, this);
 			}
 			this.dispatchCustomEvent("roomProfileUpdated", m);
 		} else if(msg.type === "PeerEntered"){
 			const m: PeerEnteredDetail = msg as PeerEntered;
 			this.peers.set(m.peer.id, m.peer);
 			for(const [_, f] of this.peerEnteredMethods){
-				f(m);
+				f(m, this);
 			}
 			this.dispatchCustomEvent("peerEntered", {peer: m.peer});
 		} else if(msg.type === "PeerLeaved"){
 			this.peers.delete(msg.peerId);
 			for(const [_, f] of this.peerLeavedMethods){
-				f(msg.peerId);
+				f(msg.peerId, this);
 			}
 			this.dispatchCustomEvent("peerLeaved", {peerId: msg.peerId});
 		} else if(msg.type === "UpdatePeerProfile"){
@@ -746,7 +746,7 @@ export class Madoi extends TypedEventTarget<Madoi, {
 				}
 				const v: PeerProfileUpdatedDetail = {...msg, peerId: msg.sender};
 				for(const [_, f] of this.peerProfileUpdatedMethods){
-					f(v);
+					f(v, this);
 				}
 				this.dispatchCustomEvent("peerProfileUpdated", v);
 			}
@@ -1090,12 +1090,12 @@ export class Madoi extends TypedEventTarget<Madoi, {
 		const self = this;
 		return function(){
 			if(self.ws === null){
-				if(f) return f.apply(null, arguments);
+				if(f) return f.apply(null, [...arguments, self]);
 			} else{
 				let ret = null;
 				let castType: CastType = "BROADCAST";
 				if(config.type === "afterExec"){
-					ret = f.apply(null, arguments);
+					ret = f.apply(null, [...arguments, self]);
 					castType = "OTHERCAST";
 				}
 				self.sendMessage(newInvokeMethod(
@@ -1121,7 +1121,7 @@ export class Madoi extends TypedEventTarget<Madoi, {
 					minOrder = p.order;
 			}
 			if(self.selfPeer.order === minOrder){
-				f.apply(null, arguments);
+				f.apply(null, [...arguments, self]);
 			}
 		} as any;
 	}
@@ -1138,7 +1138,7 @@ export class Madoi extends TypedEventTarget<Madoi, {
 				this.doSendMessage(newUpdateObjectState({
 					objId: objId,
 					objRevision: oe.revision,
-					state: info.method()
+					state: info.method(this)
 					}));
 				info.lastGet = curTick;
 				oe.modification = 0;
