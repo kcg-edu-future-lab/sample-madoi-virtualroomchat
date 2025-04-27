@@ -1,7 +1,6 @@
 
 import { MouseEvent, useRef, useState } from "react";
 import VirtualRoomDefaultBackground from "./VirtualRoomDefaultBackground.png"
-import '@svgdotjs/svg.draggable.js'
 import { VirtualRoomModel } from "./VirtualRoomModel";
 import { VirtualRoomAvatar, VirtualRoomSelfAvatar } from "./VirtualRoomAvatar";
 

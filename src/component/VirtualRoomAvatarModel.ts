@@ -1,4 +1,4 @@
-import { TypedEventTarget } from "../../lib/madoi";
+import { TypedEventTarget } from "../lib/madoi";
 
 export interface TranslatedDetail{
     x: number;

@@ -1,4 +1,4 @@
-import { EnterRoomAllowed, EnterRoomAllowedDetail, GetState, Madoi, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, SetState, Share, ShareClass, TypedEventTarget } from "../../lib/madoi";
+import { EnterRoomAllowed, EnterRoomAllowedDetail, GetState, Madoi, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, SetState, Share, ShareClass, TypedEventTarget } from "../lib/madoi";
 import { VirtualRoomAvatarModel } from "./VirtualRoomAvatarModel";
 
 interface SelfNameChangedDetail{

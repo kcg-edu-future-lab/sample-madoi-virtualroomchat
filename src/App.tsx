@@ -1,15 +1,14 @@
 import './App.css';
 import { createContext, useContext } from 'react';
 import { getLastPath } from './lib/Util';
-import { VirtualRoom as VR1 } from './component/vm1/VirtualRoom';
-import { VirtualRoom as VR2 } from './component/vm2/VirtualRoom';
-import { VirtualRoomModel as VRM2 } from './component/vm2/VirtualRoomModel';
 import { v4 as uuidv4 } from 'uuid';
 import { LocalJsonStorage } from './lib/LocalJsonStorage';
+import { madoiKey } from './keys';
 import { Madoi } from './lib/madoi';
 import { useMadoiObject } from './lib/reactHelpers';
-import { madoiKey } from './keys';
 import bg from './VirtualRoomDefaultBackground.png';
+import { VirtualRoom } from './component/VirtualRoom';
+import { VirtualRoomModel } from './component/VirtualRoomModel';
 
 const roomId: string = `sample-madoi-vroom-${getLastPath(window.location.href)}-sdsakyfs24df2sdfsfjo4`
 const ls = new LocalJsonStorage<{id: string, name: string, position: number[]}>(`presence-${roomId}`);
@@ -26,8 +25,8 @@ export const AppContext = createContext({
 
 export default function App() {
     const app = useContext(AppContext);
-    const vrm2 = useMadoiObject(app.madoi, ()=>{
-        const model = new VRM2();
+    const vrm = useMadoiObject(app.madoi, ()=>{
+        const model = new VirtualRoomModel();
         model.addEventListener("selfNameChanged", ({detail: {name}})=>{
             ls.set("name", name);
             app.madoi.updateSelfPeerProfile("name", name);
@@ -40,7 +39,6 @@ export default function App() {
     });
 
     return <div style={{width: "100%"}}>
-        <VR1 madoi={app.madoi} />
-        <VR2 selfName={selfName} vrm={vrm2} background={bg}/>
+        <VirtualRoom selfName={selfName} vrm={vrm} background={bg} />
     </div>;
 }
