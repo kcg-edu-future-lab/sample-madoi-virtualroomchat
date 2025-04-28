@@ -24,15 +24,6 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
         return this.others.values().toArray();
     }
 
-    @GetState()
-    getState(){
-        return new Array();
-    }
-
-    @SetState()
-    setState(state: any){
-    }
-
     @EnterRoomAllowed()
     protected enterRoomAllowed({selfPeer, otherPeers}: EnterRoomAllowedDetail){
         this.self = this.createAvatarFromPeer(selfPeer, "#0fa");
@@ -64,8 +55,10 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
     }
 
     @PeerLeaved()
-    protected peerLeaved({peerId}: PeerLeavedDetail){
-        this.others.delete(peerId);
+    protected peerLeaved(d: PeerLeavedDetail){
+        console.log("peerLeaved", d);
+        const deleted = this.others.delete(d.peerId);
+        console.log("peerLeaved", d, deleted);
     }
 
     private createAvatarFromPeer(p: PeerInfo, color: string){

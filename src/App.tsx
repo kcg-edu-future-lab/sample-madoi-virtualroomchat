@@ -10,7 +10,7 @@ import bg from './VirtualRoomDefaultBackground.png';
 import { VirtualRoom } from './component/VirtualRoom';
 import { VirtualRoomModel } from './component/VirtualRoomModel';
 
-const roomId: string = `sample-madoi-vroom-${getLastPath(window.location.href)}-sdsakyfs24df2sdfsfjo4`
+const roomId: string = `sample-madoi-vroom-${getLastPath(window.location.href)}-sdsakyfs24df2sdfsfjo4`;
 const ls = new LocalJsonStorage<{id: string, name: string, position: number[]}>(`presence-${roomId}`);
 const selfId = ls.get("id", () => uuidv4());
 const selfName = ls.get("name", () => "匿名");
@@ -38,7 +38,7 @@ export default function App() {
         return model;
     });
 
-    return <div style={{width: "100%"}}>
+    return <div>
         <VirtualRoom selfName={selfName} vrm={vrm} background={bg} />
     </div>;
 }

@@ -31,12 +31,12 @@ export function VirtualRoom({selfName, background=VirtualRoomDefaultBackground, 
 
     const self = vrm.selfPeer;
     const peers = vrm.otherPeers;
-    return <div style={{width: "100%", height: "100%"}}>
+    return <div>
         <div>
             <label>name: <input ref={nameInput} defaultValue={name}></input></label>
             <button onClick={onNameChangeButtonClick}>change</button>
         </div>
-        <svg ref={svg} style={{width: "100%", height: "100%", backgroundImage: `url(${background})`}}>
+        <svg ref={svg} style={{width: "512px", height: "512px", backgroundImage: `url(${background})`}}>
             {/* self */}
             {self ? <VirtualRoomSelfAvatar avatar={self} /> : ""}
             {/* peers */}
