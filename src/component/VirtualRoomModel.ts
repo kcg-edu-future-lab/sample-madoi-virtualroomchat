@@ -1,16 +1,12 @@
-import { EnterRoomAllowed, EnterRoomAllowedDetail, GetState, Madoi, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, SetState, Share, ShareClass, TypedEventTarget } from "../lib/madoi";
+import { EnterRoomAllowed, EnterRoomAllowedDetail, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, ShareClass, TypedEventTarget } from "../lib/madoi";
 import { VirtualRoomAvatarModel } from "./VirtualRoomAvatarModel";
 
-interface SelfNameChangedDetail{
-    name: string;
-}
 interface SelfPositionChangedDetail{
     position: number[];
 }
 
 @ShareClass({className: "VirtualRoom"})
 export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
-    selfNameChanged: SelfNameChangedDetail;
     selfPositionChanged: SelfPositionChangedDetail;
 }>{
     private self: VirtualRoomAvatarModel | null = null;
@@ -27,9 +23,6 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
     @EnterRoomAllowed()
     protected enterRoomAllowed({selfPeer, otherPeers}: EnterRoomAllowedDetail){
         this.self = this.createAvatarFromPeer(selfPeer, "#0fa");
-        this.self.addEventListener("nameChanged", ({detail: {name}})=>{
-            this.dispatchCustomEvent("selfNameChanged", {name});
-        });
         this.self.addEventListener("positionChanged", ({detail: {x, y}})=>{
             this.dispatchCustomEvent("selfPositionChanged", {position: [x, y]});
         });
@@ -56,9 +49,7 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
 
     @PeerLeaved()
     protected peerLeaved(d: PeerLeavedDetail){
-        console.log("peerLeaved", d);
-        const deleted = this.others.delete(d.peerId);
-        console.log("peerLeaved", d, deleted);
+        this.others.delete(d.peerId);
     }
 
     private createAvatarFromPeer(p: PeerInfo, color: string){

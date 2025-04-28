@@ -4,7 +4,7 @@ import { VirtualRoomAvatar, VirtualRoomSelfAvatar } from "./VirtualRoomAvatar";
 
 interface Props{
     vrm: VirtualRoomModel;
-    background?: string;
+    background: string;
 }
 export function VirtualRoom({background, vrm}: Props){
     const self = vrm.selfPeer;

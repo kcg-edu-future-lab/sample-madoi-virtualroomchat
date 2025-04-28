@@ -14,7 +14,6 @@ const ls = new LocalJsonStorage<{id: string, name: string, position: number[], b
 const selfId = ls.get("id", () => uuidv4());
 const selfName = ls.get("name", "匿名");
 const selfPosition = ls.get("position", () => [Math.random() * 100, Math.random() * 100]);
-const bgImgUrl = ls.get("bgImgUrl", "VirtualRoomDefaultBackground.png");
 
 export const AppContext = createContext({
     madoi: new Madoi(
@@ -27,49 +26,41 @@ export default function App() {
     const app = useContext(AppContext);
     const [name, setName] = useState(selfName);
     const nameInput = useRef<HTMLInputElement>(null);
-    const [bgUrl, setBgUrl] = useMadoiState(app.madoi, bgImgUrl);
+    const [bgUrl, setBgUrl] = useMadoiState(app.madoi, ()=>ls.get("bgImgUrl", "defaultBackground.png"));
     const bgInput = useRef<HTMLInputElement>(null);
-    const onBackgroundeChangeButtonClick = (e: MouseEvent)=>{
-        e.preventDefault();
-        const url = bgInput.current?.value.trim();
-        if(!url || url === "") return;
-        setBgUrl(url);
-    };
     ls.set("bgImgUrl", bgUrl);
 
-/*
-    @Share({ maxLog: 1000 })
-    changeBgImg(url: string) {
-        this.svg.style.backgroundImage = `url('${url}')`;
-        this.container.size(this.svg.clientWidth, this.svg.clientHeight);
-    }
-*/
-    const onNameChangeButtonClick = (e: MouseEvent)=>{
-        e.preventDefault();
-        const name = nameInput.current?.value.trim();
-        if(!name || name === "") return;
-        vrm.selfPeer!.name = name;
-        setName(name);
-    };
     const vrm = useMadoiObject(app.madoi, ()=>{
         const model = new VirtualRoomModel();
-        model.addEventListener("selfNameChanged", ({detail: {name}})=>{
-            ls.set("name", name);
-            app.madoi.updateSelfPeerProfile("name", name);
-        });
         model.addEventListener("selfPositionChanged", ({detail: {position}})=>{
             ls.set("position", position);
             app.madoi.updateSelfPeerProfile("position", position);
         });
         return model;
     });
+    const onNameChangeButtonClick = (e: MouseEvent)=>{
+        e.preventDefault();
+        const name = nameInput.current?.value.trim();
+        if(!name || name === "") return;
+        vrm.selfPeer!.name = name;
+        setName(name);
+        ls.set("name", name);
+        app.madoi.updateSelfPeerProfile("name", name);
+    };
+    const onBackgroundChangeButtonClick = (e: MouseEvent)=>{
+        e.preventDefault();
+        const url = bgInput.current?.value.trim();
+        if(!url || url === "") return;
+        setBgUrl(url);
+    };
 
     return <div>
         <div>
             <label>name: <input ref={nameInput} defaultValue={name}></input></label>
             <button onClick={onNameChangeButtonClick}>change</button>
+            &nbsp;
             <label>background: <input ref={bgInput} defaultValue={bgUrl}></input></label>
-            <button onClick={onBackgroundeChangeButtonClick}>change</button>
+            <button onClick={onBackgroundChangeButtonClick}>change</button>
        </div>
         <VirtualRoom vrm={vrm} background={bgUrl} />
     </div>;
