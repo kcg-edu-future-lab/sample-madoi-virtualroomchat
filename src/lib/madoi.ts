@@ -728,13 +728,14 @@ export class Madoi extends TypedEventTarget<Madoi, {
 			for(const [_, f] of this.peerEnteredMethods){
 				f(m, this);
 			}
-			this.dispatchCustomEvent("peerEntered", {peer: m.peer});
+			this.dispatchCustomEvent("peerEntered", m);
 		} else if(msg.type === "PeerLeaved"){
+			const m: PeerLeavedDetail = msg as PeerLeaved;
 			this.peers.delete(msg.peerId);
 			for(const [_, f] of this.peerLeavedMethods){
-				f(msg.peerId, this);
+				f(m, this);
 			}
-			this.dispatchCustomEvent("peerLeaved", {peerId: msg.peerId});
+			this.dispatchCustomEvent("peerLeaved", m);
 		} else if(msg.type === "UpdatePeerProfile"){
 			const p = this.peers.get(msg.sender!);
 			if(msg.sender && p){

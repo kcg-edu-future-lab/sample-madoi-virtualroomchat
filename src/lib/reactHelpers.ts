@@ -49,7 +49,7 @@ export function useMadoiState<T>(madoi: Madoi, initial: ValueOrFactory<T>): [T, 
     initialValue.current = getValue(initial);
   }
 
-  const rerenderOnStateChange = true;
+  const renderOnStateChange = true;
   useEffect(()=>{
     if(target.current !== null) return;
     const obj = new State(initialValue.current) as any;
@@ -72,7 +72,9 @@ export function useMadoiState<T>(madoi: Madoi, initial: ValueOrFactory<T>): [T, 
         const shareMethod = obj[p];
         const f = function(){
           shareMethod.apply(obj, arguments);
-          if(rerenderOnStateChange) setState(getStateMethod.apply(obj));
+          if(renderOnStateChange){
+            setState(getStateMethod.apply(obj));
+          }
         };
         f.madoiMethodConfig_ = cfg;
         obj[p] = f;
@@ -80,7 +82,7 @@ export function useMadoiState<T>(madoi: Madoi, initial: ValueOrFactory<T>): [T, 
         const setStateMethod = obj[p];
         const f = function(){
           setStateMethod.apply(obj, arguments);
-          if(rerenderOnStateChange) setState(getStateMethod.apply(obj));
+          if(renderOnStateChange) setState(getStateMethod.apply(obj));
         };
         f.madoiMethodConfig_ = cfg;
         obj[p] = f;
@@ -94,7 +96,7 @@ export function useMadoiState<T>(madoi: Madoi, initial: ValueOrFactory<T>): [T, 
       getOrApplyValue(target.current?.getState(), vof))}];
 }
 
-export function useMadoiObject<T>(madoi: Madoi, obj: ValueOrFactory<T>, rerenderOnStateChange = true): T {
+export function useMadoiObject<T>(madoi: Madoi, obj: ValueOrFactory<T>, renderOnStateChange = true): T {
   const target = useRef<T>(null!);
   const registered = useRef(false);
   const [_state, setState] = useState<any>();
@@ -114,9 +116,6 @@ export function useMadoiObject<T>(madoi: Madoi, obj: ValueOrFactory<T>, rerender
         getStateMethod = obj[p];
       }
     }
-    if(getStateMethod == null){
-      throw new Error(`${typeof obj} must declare @GetState method.`);
-    }
     for(let p of Object.getOwnPropertyNames(Object.getPrototypeOf(obj))){
       const cfg = obj[p]?.madoiMethodConfig_;
       if(!cfg) continue;
@@ -126,7 +125,13 @@ export function useMadoiObject<T>(madoi: Madoi, obj: ValueOrFactory<T>, rerender
         const method = obj[p];
         const f = function(){
           method.apply(obj, arguments);
-          if(rerenderOnStateChange) setState(getStateMethod.apply(obj));
+          if(renderOnStateChange){
+            if(getStateMethod){
+              setState(getStateMethod.apply(obj));
+            } else{
+              setState(new Object());
+            }
+          }
         };
         f.madoiMethodConfig_ = cfg;
         obj[p] = f;
