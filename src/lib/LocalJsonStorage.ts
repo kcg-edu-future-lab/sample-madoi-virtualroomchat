@@ -3,12 +3,12 @@ export class LocalJsonStorage<Items extends Record<string, any>>{
     }
 
     get<K extends keyof Items>(
-        name: K, defaultValue: Items[K] | (()=>Items[K]) | undefined): Items[K];
+        name: K, defaultValue?: Items[K] | (()=>Items[K])): Items[K];
     get(name: string, defaultValue: any) {
         const key = `${this.keyPrefix}:${name}`;
         let ret = JSON.parse(localStorage.getItem(key) || "null");
         if(ret !== null) return ret;
-        if(typeof defaultValue === 'undefined') return defaultValue;
+        if(!defaultValue) return defaultValue;
         ret = defaultValue;
         if(typeof ret === 'function') ret = ret();
         localStorage.setItem(key, JSON.stringify(ret));
