@@ -13,8 +13,6 @@ export class VirtualRoomOwnModel extends TypedEventTarget<VirtualRoomOwnModel, {
     selfNameChanged: SelfNameChangedDetail,
     selfPositionChanged: SelfPositionChangedDetail,
 }>{
-    private static selfColor = "#0fa";
-    private static othersColor = "#99aaFF";
     private ls: LocalJsonStorage<{name: string, position: number[]}>;
     private self: AvatarModel;
     private others: Map<string, AvatarModel> = new Map();
@@ -23,9 +21,8 @@ export class VirtualRoomOwnModel extends TypedEventTarget<VirtualRoomOwnModel, {
     constructor(roomId: string, private initialName: string, private initialPosition: number[]){
         super();
         this.ls = new LocalJsonStorage(roomId);
-        this.self = new AvatarModel(
-            "", this.ls.get("name", initialName),
-            VirtualRoomOwnModel.selfColor,
+        this.self = new AvatarModel("",
+            this.ls.get("name", initialName),
             this.ls.get("position", initialPosition));
     }
 
@@ -48,7 +45,7 @@ export class VirtualRoomOwnModel extends TypedEventTarget<VirtualRoomOwnModel, {
     @EnterRoomAllowed()
     protected enterRoomAllowed({selfPeer, otherPeers}: EnterRoomAllowedDetail){
         console.log("VirtualRoomOwnModel.enterRoomAllowed", selfPeer, otherPeers);
-        this.self = this.createAvatarFromPeer(selfPeer, VirtualRoomOwnModel.selfColor);
+        this.self = this.createAvatarFromPeer(selfPeer);
         this.self.addEventListener("nameChanged", ({detail: {name}})=>{
             this.ls.set("name", name);
             this.madoi?.updateSelfPeerProfile("name", name);
@@ -60,14 +57,14 @@ export class VirtualRoomOwnModel extends TypedEventTarget<VirtualRoomOwnModel, {
             this.dispatchCustomEvent("selfPositionChanged", {position});
         });
         for(const p of otherPeers){
-            this.others.set(p.id, this.createAvatarFromPeer(p, VirtualRoomOwnModel.othersColor));
+            this.others.set(p.id, this.createAvatarFromPeer(p));
         }
     }
 
     @PeerEntered()
     protected peerEntered({peer}: PeerEnteredDetail){
         console.log("VirtualRoomOwnModel.peerEntered", {peer});
-        this.others.set(peer.id, this.createAvatarFromPeer(peer, VirtualRoomOwnModel.othersColor));
+        this.others.set(peer.id, this.createAvatarFromPeer(peer));
     }
 
     @PeerProfileUpdated()
@@ -87,8 +84,8 @@ export class VirtualRoomOwnModel extends TypedEventTarget<VirtualRoomOwnModel, {
         this.others.delete(peerId);
     }
 
-    private createAvatarFromPeer(p: PeerInfo, color: string){
+    private createAvatarFromPeer(p: PeerInfo){
         return new AvatarModel(
-            p.id, p.profile["name"], color, p.profile["position"]);
+            p.id, p.profile["name"], p.profile["position"]);
     }
 }

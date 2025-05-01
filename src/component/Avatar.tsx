@@ -15,7 +15,7 @@ interface Props{
 }
 export function Avatar({avatar}: Props){
     return <g transform={`translate(${avatar.position[0]} ${avatar.position[1]})`}>
-        <circle r={24} fill={avatar.color}></circle>
+        <circle r={24} fill="#99aaFF"></circle>
         <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>
     </g>;
 }
@@ -38,8 +38,8 @@ export function SelfAvatar({avatar}: Props){
         drag.current = null;
     }
     return <g ref={gr} transform={`translate(${avatar.position[0]} ${avatar.position[1]})`}
-            onPointerDown={onPointerDown} onMouseMove={onPointerMove} onMouseUp={onPointerUp}>
-        <circle r={24} fill={avatar.color}></circle>
+            onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}>
+        <circle r={24} fill="#0fa"></circle>
         <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>
     </g>;
 }

@@ -11,7 +11,7 @@ export class AvatarModel extends TypedEventTarget<AvatarModel, {
     positionChanged: TranslatedDetail
 }>{
     constructor(private _id: string, private _name: string,
-            private _color: string, private _position: number[]){
+            private _position: number[]){
         super();
     }
 
@@ -35,10 +35,6 @@ export class AvatarModel extends TypedEventTarget<AvatarModel, {
     set position(position: number[]){
         this._position = position;
         this.dispatchCustomEvent("positionChanged", {position: this._position});
-    }
-
-    get color(){
-        return this._color;
     }
 
     translate(dx: number, dy: number){
