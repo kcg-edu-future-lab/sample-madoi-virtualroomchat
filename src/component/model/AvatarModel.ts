@@ -1,15 +1,15 @@
-import { TypedEventTarget } from "../lib/madoi";
+import { TypedEventTarget } from "../../lib/madoi";
 
+export interface NameChangedDetail{
+    name: string;
+}
 export interface TranslatedDetail{
     x: number;
     y: number;
 }
-export interface NameChangedDetail{
-    name: string;
-}
-export class VirtualRoomAvatarModel extends TypedEventTarget<VirtualRoomAvatarModel, {
-    positionChanged: TranslatedDetail,
-    nameChanged: NameChangedDetail
+export class AvatarModel extends TypedEventTarget<AvatarModel, {
+    nameChanged: NameChangedDetail,
+    positionChanged: TranslatedDetail
 }>{
     constructor(private _id: string, private _name: string,
             private _color: string, private _x: number, private _y: number){

@@ -1,17 +1,18 @@
 import './App.css';
-import { createContext, FormEvent, useContext, useRef, useState } from 'react';
+import { createContext, useContext, useRef, useState } from 'react';
 import { getLastPath } from './lib/Util';
 import { v4 as uuidv4 } from 'uuid';
 import { LocalJsonStorage } from './lib/LocalJsonStorage';
-import { madoiKey } from './keys';
+import { madoiKey, madoiUrl } from './keys';
 import { Madoi, PeerInfo } from './lib/madoi';
-import { useMadoiObject, useMadoiState } from './lib/reactHelpers';
+import { useMadoiModel } from './lib/reactHelpers';
 import { VirtualRoom } from './component/VirtualRoom';
-import { VirtualRoomModel } from './component/VirtualRoomModel';
+import { VirtualRoomLocalModel } from './component/model/VirtualRoomLocalModel';
+import { VirtualRoomModel } from './component/model/VirtualRoomModel';
 
 const roomId: string = `sample-madoi-vroom-${getLastPath(window.location.href)}-sdsakyfs24df2sdfsfjo4`;
 const ls = new LocalJsonStorage<{
-    id: string, name: string, position: number[], bgImgUrl: string
+    id: string, name: string, position: number[], background: string
 }>(`presence-${roomId}`);
 const selfPeerInfo: PeerInfo = {
     id: ls.get("id", () => uuidv4()),
@@ -22,58 +23,39 @@ const selfPeerInfo: PeerInfo = {
     }
 };
 export const AppContext = createContext({
+    storage: ls,
     madoi: new Madoi(
 //      `ws://localhost:8080/madoi/rooms/${roomId}`,
-        `wss://fungo.kcg.edu/madoi-20241213/rooms/${roomId}`,
+        `${madoiUrl}/${roomId}`,
         madoiKey, selfPeerInfo
     )
 });
 
 export default function App() {
     const app = useContext(AppContext);
-    const [name, setName] = useState(ls.get("name"));
-    const nameInput = useRef<HTMLInputElement>(null);
-    const [bgUrl, setBgUrl] = useMadoiState(
-            app.madoi, ls.get("bgImgUrl", "defaultBackground.png"));
-    ls.set("bgImgUrl", bgUrl);
-    const bgInput = useRef<HTMLInputElement>(null);
+    const [_, setName] = useState(ls.get("name"));
 
-    const vrm = useMadoiObject(app.madoi, ()=>{
-        const model = new VirtualRoomModel();
+    const vrlm = useMadoiModel(app.madoi, ()=>{
+        const model = new VirtualRoomLocalModel();
+        model.addEventListener("selfNameChanged", ({detail: {name}})=>{
+            app.storage.set("name", name);
+            app.madoi.updateSelfPeerProfile("name", name);
+            setName(name);
+        });
         model.addEventListener("selfPositionChanged", ({detail: {position}})=>{
-            ls.set("position", position);
+            app.storage.set("position", position);
             app.madoi.updateSelfPeerProfile("position", position);
         });
         return model;
     });
-    const onNameChange = (e: FormEvent)=>{
-        e.preventDefault();
-        const name = nameInput.current?.value.trim();
-        if(!name || name === "") return;
-        vrm.selfPeer!.name = name;
-        setName(name);
-        ls.set("name", name);
-        app.madoi.updateSelfPeerProfile("name", name);
-    };
-    const onBackgroundChange = (e: FormEvent)=>{
-        e.preventDefault();
-        const url = bgInput.current?.value.trim();
-        if(!url || url === "") return;
-        setBgUrl(url);
-    };
+    const vrm = useMadoiModel(app.madoi, ()=>{
+        const model = new VirtualRoomModel(
+            app.storage.get("background", "defaultBackground.png"));
+        model.addEventListener("backgroundChanged", ({detail: {background}})=>{
+            app.storage.set("background", background);
+        });
+        return model;
+    });
 
-    return <>
-        <div>
-            <form onSubmit={onNameChange} style={{display: "inline-block"}}>
-                <label>名前: <input ref={nameInput} defaultValue={name}></input></label>
-                <button>変更</button>
-            </form>
-            &nbsp;&nbsp;
-            <form onSubmit={onBackgroundChange} style={{display: "inline-block"}}>
-                <label>背景: <input ref={bgInput} defaultValue={bgUrl}></input></label>
-                <button>変更</button>
-            </form>
-        </div>
-        <VirtualRoom vrm={vrm} background={bgUrl} />
-    </>;
+    return <VirtualRoom vrm={vrm} vrlm={vrlm} />;
 }

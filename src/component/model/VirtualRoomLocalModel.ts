@@ -1,16 +1,19 @@
-import { EnterRoomAllowed, EnterRoomAllowedDetail, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, ShareClass, TypedEventTarget } from "../lib/madoi";
-import { VirtualRoomAvatarModel } from "./VirtualRoomAvatarModel";
+import { EnterRoomAllowed, EnterRoomAllowedDetail, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, ShareClass, TypedEventTarget } from "../../lib/madoi";
+import { AvatarModel } from "./AvatarModel";
 
-interface SelfPositionChangedDetail{
+export interface SelfNameChangedDetail{
+    name: string;
+}
+export interface SelfPositionChangedDetail{
     position: number[];
 }
-
-@ShareClass({className: "VirtualRoom"})
-export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
-    selfPositionChanged: SelfPositionChangedDetail;
+@ShareClass({className: "VirtualRoomLocalModel"})
+export class VirtualRoomLocalModel extends TypedEventTarget<VirtualRoomLocalModel, {
+    selfNameChanged: SelfNameChangedDetail,
+    selfPositionChanged: SelfPositionChangedDetail,
 }>{
-    private self: VirtualRoomAvatarModel | null = null;
-    private others: Map<string, VirtualRoomAvatarModel> = new Map();
+    private self: AvatarModel | null = null;
+    private others: Map<string, AvatarModel> = new Map();
 
     get selfPeer(){
         return this.self;
@@ -23,6 +26,9 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
     @EnterRoomAllowed()
     protected enterRoomAllowed({selfPeer, otherPeers}: EnterRoomAllowedDetail){
         this.self = this.createAvatarFromPeer(selfPeer, "#0fa");
+        this.self.addEventListener("nameChanged", ({detail: {name}})=>{
+            this.dispatchCustomEvent("selfNameChanged", {name});
+        });
         this.self.addEventListener("positionChanged", ({detail: {x, y}})=>{
             this.dispatchCustomEvent("selfPositionChanged", {position: [x, y]});
         });
@@ -42,8 +48,7 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
         if(!peer || !d.updates) return;
         if(d.updates["name"]) peer.name = d.updates["name"];
         if(d.updates["position"]){
-            peer.x = d.updates["position"][0];
-            peer.y = d.updates["position"][1];
+            [peer.x, peer.y] = d.updates["position"];
         }
     }
 
@@ -53,8 +58,8 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
     }
 
     private createAvatarFromPeer(p: PeerInfo, color: string){
-        return new VirtualRoomAvatarModel(
-            p.id, p.profile["name"], color,
-            p.profile["position"][0], p.profile["position"][1]);
+        const [x, y] = p.profile["position"];
+        return new AvatarModel(
+            p.id, p.profile["name"], color, x, y);
     }
 }

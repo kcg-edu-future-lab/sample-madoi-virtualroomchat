@@ -1,5 +1,5 @@
 import { PointerEvent, useRef } from "react";
-import { VirtualRoomAvatarModel } from "./VirtualRoomAvatarModel";
+import { AvatarModel } from "./model/AvatarModel";
 
 class DragState{
     constructor(private _x: number = 0, private _y: number = 0){
@@ -10,10 +10,16 @@ class DragState{
         return {dx, dy};
     }
 }
-interface VirtualRoomAvatarProps{
-    avatar: VirtualRoomAvatarModel;
+interface Props{
+    avatar: AvatarModel;
 }
-export function VirtualRoomSelfAvatar({avatar}: VirtualRoomAvatarProps){
+export function Avatar({avatar}: Props){
+    return <g transform={`translate(${avatar.x} ${avatar.y})`}>
+        <circle r={24} fill={avatar.color}></circle>
+        <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>
+    </g>;
+}
+export function SelfAvatar({avatar}: Props){
     const gr = useRef<SVGGElement>(null!);
     const drag = useRef<DragState | null>(null);
     const onPointerDown = (e: PointerEvent<SVGGElement>)=>{
@@ -33,12 +39,6 @@ export function VirtualRoomSelfAvatar({avatar}: VirtualRoomAvatarProps){
     }
     return <g ref={gr} transform={`translate(${avatar.x} ${avatar.y})`}
             onPointerDown={onPointerDown} onMouseMove={onPointerMove} onMouseUp={onPointerUp}>
-        <circle r={24} fill={avatar.color}></circle>
-        <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>
-    </g>;
-}
-export function VirtualRoomAvatar({avatar}: VirtualRoomAvatarProps){
-    return <g transform={`translate(${avatar.x} ${avatar.y})`}>
         <circle r={24} fill={avatar.color}></circle>
         <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>
     </g>;

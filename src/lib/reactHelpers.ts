@@ -96,13 +96,13 @@ export function useMadoiState<T>(madoi: Madoi, initial: ValueOrFactory<T>): [T, 
       getOrApplyValue(target.current?.getState(), vof))}];
 }
 
-export function useMadoiObject<T>(madoi: Madoi, obj: ValueOrFactory<T>, renderOnStateChange = true): T {
+export function useMadoiModel<T>(madoi: Madoi, model: ValueOrFactory<T>, renderOnStateChange = true): T {
   const target = useRef<T>(null!);
   const registered = useRef(false);
   const [_state, setState] = useState<any>();
 
   if(target.current === null){
-    target.current = getValue(obj);
+    target.current = getValue(model);
   }
 
   useEffect(()=>{
