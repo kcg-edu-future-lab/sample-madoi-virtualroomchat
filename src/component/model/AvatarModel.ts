@@ -4,47 +4,46 @@ export interface NameChangedDetail{
     name: string;
 }
 export interface TranslatedDetail{
-    x: number;
-    y: number;
+    position: number[];
 }
 export class AvatarModel extends TypedEventTarget<AvatarModel, {
     nameChanged: NameChangedDetail,
     positionChanged: TranslatedDetail
 }>{
     constructor(private _id: string, private _name: string,
-            private _color: string, private _x: number, private _y: number){
+            private _color: string, private _position: number[]){
         super();
     }
+
     get id(){
         return this._id;
     }
+
     get name(){
         return this._name;
     }
+
     set name(name: string){
         this._name = name;
         this.dispatchCustomEvent("nameChanged", {name});
     }
-    get x(){
-        return this._x;
+
+    get position(){
+        return this._position;
     }
-    set x(x: number){
-        this._x = x;
-        this.dispatchCustomEvent("positionChanged", {x: this._x, y: this._y});
+
+    set position(position: number[]){
+        this._position = position;
+        this.dispatchCustomEvent("positionChanged", {position: this._position});
     }
-    get y(){
-        return this._y;
-    }
-    set y(y: number){
-        this._y = y;
-        this.dispatchCustomEvent("positionChanged", {x: this._x, y: this._y});
-    }
+
     get color(){
         return this._color;
     }
+
     translate(dx: number, dy: number){
-        this._x += dx;
-        this._y += dy;
-        this.dispatchCustomEvent("positionChanged", {x: this._x, y: this._y});
+        this._position[0] += dx;
+        this._position[1] += dy;
+        this.dispatchCustomEvent("positionChanged", {position: this._position});
     }
 }

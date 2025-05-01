@@ -1,21 +1,23 @@
-import { FormEvent, useRef } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Avatar, SelfAvatar } from "./Avatar";
 import { VirtualRoomModel } from "./model/VirtualRoomModel";
-import { VirtualRoomLocalModel } from "./model/VirtualRoomLocalModel";
+import { VirtualRoomOwnModel } from "./model/VirtualRoomOwnModel";
 
 interface Props{
     vrm: VirtualRoomModel;
-    vrlm: VirtualRoomLocalModel;
+    vrom: VirtualRoomOwnModel;
 }
-export function VirtualRoom({vrm, vrlm}: Props){
+export function VirtualRoom({vrm, vrom}: Props){
     const nameInput = useRef<HTMLInputElement>(null!);
     const bgInput = useRef<HTMLInputElement>(null!);
+    const [name, setName] = useState(vrom.selfPeer.name);
 
     const onNameChange = (e: FormEvent)=>{
         e.preventDefault();
         const name = nameInput.current?.value.trim();
         if(!name || name === "") return;
-        vrlm.selfPeer!.name = name;
+        vrom.selfPeer.name = name;
+        setName(name);
     };
     const onBackgroundChange = (e: FormEvent)=>{
         e.preventDefault();
@@ -24,12 +26,10 @@ export function VirtualRoom({vrm, vrlm}: Props){
         vrm.background = url;
     };
 
-    const self = vrlm.selfPeer;
-    const peers = vrlm.otherPeers;
     return <>
         <div>
             <form onSubmit={onNameChange} style={{display: "inline-block"}}>
-                <label>名前: <input ref={nameInput} defaultValue={vrlm.selfPeer?.name}></input></label>
+                <label>名前: <input ref={nameInput} defaultValue={name}></input></label>
                 <button>変更</button>
             </form>
             &nbsp;&nbsp;
@@ -40,9 +40,9 @@ export function VirtualRoom({vrm, vrlm}: Props){
         </div>
         <svg style={{width: "512px", height: "512px", backgroundImage: `url(${vrm.background})`}}>
             {/* self */}
-            {self ? <SelfAvatar avatar={self} /> : ""}
+            {<SelfAvatar avatar={vrom.selfPeer} />}
             {/* peers */}
-            {peers.map(p=><Avatar key={p.id} avatar={p} />)}
+            {vrom.otherPeers.map(p=><Avatar key={p.id} avatar={p} />)}
         </svg>
     </>;
 }

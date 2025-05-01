@@ -1,3 +1,4 @@
+import { LocalJsonStorage } from "../../lib/LocalJsonStorage";
 import { GetState, SetState, ShareClass, TypedEventTarget } from "../../lib/madoi";
 
 export interface BackgroundChangedDetail{
@@ -7,8 +8,13 @@ export interface BackgroundChangedDetail{
 export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
     backgroundChanged: BackgroundChangedDetail
 }>{
-    constructor(private _background: string){
+    private ls: LocalJsonStorage<{background: string}>;
+    private _background: string;
+
+    constructor(roomId: string, defaultBackground: string){
         super();
+        this.ls = new LocalJsonStorage(roomId);
+        this._background = this.ls.get("background", defaultBackground);
     }
 
     get background(){
@@ -29,5 +35,6 @@ export class VirtualRoomModel extends TypedEventTarget<VirtualRoomModel, {
     setState({background}: {background: string}){
         this._background = background;
         this.dispatchCustomEvent("backgroundChanged", {background});
+        this.ls.set("background", background);
     }
 }

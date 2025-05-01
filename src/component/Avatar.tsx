@@ -14,7 +14,7 @@ interface Props{
     avatar: AvatarModel;
 }
 export function Avatar({avatar}: Props){
-    return <g transform={`translate(${avatar.x} ${avatar.y})`}>
+    return <g transform={`translate(${avatar.position[0]} ${avatar.position[1]})`}>
         <circle r={24} fill={avatar.color}></circle>
         <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>
     </g>;
@@ -29,7 +29,7 @@ export function SelfAvatar({avatar}: Props){
     const onPointerMove = (e: PointerEvent<SVGGElement>)=>{
         if(drag.current === null) return;
         const {dx, dy} = drag.current.move(e.clientX, e.clientY);
-        gr.current.setAttribute("transform", `translate(${avatar.x + dx} ${avatar.y + dy})`);
+        gr.current.setAttribute("transform", `translate(${avatar.position[0] + dx} ${avatar.position[1] + dy})`);
     }
     const onPointerUp = (e: PointerEvent<SVGGElement>)=>{
         if(drag.current === null) return;
@@ -37,7 +37,7 @@ export function SelfAvatar({avatar}: Props){
         avatar.translate(dx, dy);
         drag.current = null;
     }
-    return <g ref={gr} transform={`translate(${avatar.x} ${avatar.y})`}
+    return <g ref={gr} transform={`translate(${avatar.position[0]} ${avatar.position[1]})`}
             onPointerDown={onPointerDown} onMouseMove={onPointerMove} onMouseUp={onPointerUp}>
         <circle r={24} fill={avatar.color}></circle>
         <text textAnchor="middle" dominantBaseline="middle">{avatar.name}</text>

@@ -416,6 +416,17 @@ export function HostOnly(config: HostOnlyConfig = {}){
 }
 
 // Decorator
+export interface BeforeEnterRoomConfig{
+}
+export function BeforeEnterRoom(config: BeforeEnterRoomConfig = {}){
+	const c = config;
+	return (target: any, name: string, _descriptor: PropertyDescriptor) => {
+		const mc: MethodConfig = {beforeEnterRoom: c};
+		target[name].madoiMethodConfig_ = mc;
+	}
+}
+
+// Decorator
 export interface EnterRoomAllowedConfig{
 }
 export function EnterRoomAllowed(config: EnterRoomAllowedConfig = {}){
@@ -497,14 +508,15 @@ export type MethodConfig =
 	{hostOnly: HostOnlyConfig} |
 	{getState: GetStateConfig} |
 	{setState: SetStateConfig} |
+	{beforeEnterRoom: BeforeEnterRoomConfig} |
 	{enterRoomAllowed: EnterRoomAllowedConfig} |
 	{enterRoomDenied: EnterRoomDeniedConfig} |
 	{leaveRoomDone: LeaveRoomDoneConfig} |
 	{roomProfileUpdated: RoomProfileUpdatedConfig} |
 	{peerEntered: PeerEnteredConfig} |
 	{peerLeaved: PeerLeavedConfig} |
-	{peerProfileUpdated: PeerProfileUpdatedConfig;
-}
+	{peerProfileUpdated: PeerProfileUpdatedConfig};
+
 
 
 // ---- madoi ----
@@ -551,6 +563,7 @@ export class Madoi extends TypedEventTarget<Madoi, {
 	// annotated methods
 	private getStateMethods = new Map<number, {method: (madoi: Madoi)=>any, config: GetStateConfig, lastGet: number}>();
 	private setStateMethods = new Map<number, (state: any, madoi: Madoi)=>void>(); // objectId -> @SetState method
+	private beforeEnterRoomMethods = new Map<number, (selfProfile: {[key: string]: string}, madoi: Madoi)=>void>();
 	private enterRoomAllowedMethods = new Map<number, (detail: EnterRoomAllowedDetail, madoi: Madoi)=>void>();
 	private enterRoomDeniedMethods = new Map<number, (detail: EnterRoomDeniedDetail, madoi: Madoi)=>void>();
 	private leaveRoomDoneMethods = new Map<number, (madoi: Madoi)=>void>();
@@ -562,7 +575,7 @@ export class Madoi extends TypedEventTarget<Madoi, {
 	private url: string;
 	private ws: WebSocket | null = null;
 	private room: RoomInfo = {id: "", spec: {maxLog: 1000}, profile: {}};
-	private selfPeer: PeerInfo;
+	private selfPeer: PeerInfo = {id: "", order: -1, profile: {}};
 	private peers = new Map<string, PeerInfo>();
 	private currentSender: string | null = null;
 
@@ -570,9 +583,9 @@ export class Madoi extends TypedEventTarget<Madoi, {
 			selfPeer?: {id: string, profile: {[key: string]: any}},
 			room?: {spec: RoomSpec, profile: {[key: string]: any}}){
 		super();
-		this.selfPeer = selfPeer ? {...selfPeer, order: -1} : {id: "", order: -1, profile: {}};
+		if(room) this.room = {...this.room, ...room};
+		if(selfPeer) this.selfPeer = {...this.selfPeer, ...selfPeer, order: -1};
 		this.interimQueue = new Array();
-		this.doSendMessage(newEnterRoom({ room: room, selfPeer: this.selfPeer }));
 		const sep = roomIdOrUrl.indexOf("?") != -1 ? "&" : "?";
 		if(roomIdOrUrl.match(/^wss?:\/\//)){
 			this.url = `${roomIdOrUrl}${sep}authToken=${authToken}`;
@@ -660,6 +673,11 @@ export class Madoi extends TypedEventTarget<Madoi, {
 
 	private handleOnOpen(_e: Event){
 		this.connecting = true;
+
+		for(const [_, f] of this.beforeEnterRoomMethods){
+			f(this.selfPeer.profile, this);
+		}
+		this.doSendMessage(newEnterRoom({ room: this.room, selfPeer: this.selfPeer }));
 		for(let m of this.interimQueue){
 			this.ws?.send(JSON.stringify(m));
 		}
@@ -1019,6 +1037,9 @@ export class Madoi extends TypedEventTarget<Madoi, {
 			} else if("setState" in c){
 				// @SetStateの場合はメソッドを登録
 				this.setStateMethods.set(objId, f.bind(obj));
+			} else if("beforeEnterRoom" in c){
+				// @BeforeEnterRoomの場合はメソッドを登録
+				this.beforeEnterRoomMethods.set(objId, f.bind(obj));
 			} else if("enterRoomAllowed" in c){
 				// @EnterRoomAllowedの場合はメソッドを登録
 				this.enterRoomAllowedMethods.set(objId, f.bind(obj));
