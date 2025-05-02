@@ -23,15 +23,18 @@ export function SelfAvatar({avatar}: Props){
     const gr = useRef<SVGGElement>(null!);
     const drag = useRef<DragState | null>(null);
     const onPointerDown = (e: PointerEvent<SVGGElement>)=>{
+        e.preventDefault();
         drag.current = new DragState(e.clientX, e.clientY);
         e.currentTarget.setPointerCapture(e.pointerId);
     };
     const onPointerMove = (e: PointerEvent<SVGGElement>)=>{
+        e.preventDefault();
         if(drag.current === null) return;
         const {dx, dy} = drag.current.move(e.clientX, e.clientY);
         gr.current.setAttribute("transform", `translate(${avatar.position[0] + dx} ${avatar.position[1] + dy})`);
     }
     const onPointerUp = (e: PointerEvent<SVGGElement>)=>{
+        e.preventDefault();
         if(drag.current === null) return;
         const {dx, dy} = drag.current.move(e.clientX, e.clientY);
         avatar.translate(dx, dy);
