@@ -1,5 +1,5 @@
-import { LocalJsonStorage } from "../../lib/LocalJsonStorage";
-import { GetState, SetState, ShareClass, TypedEventTarget } from "../../lib/madoi";
+import { LocalJsonStorage } from "../../../util/LocalJsonStorage";
+import { GetState, SetState, ShareClass, TypedEventTarget } from "../../../madoi/madoi";
 
 export interface BackgroundChangedDetail{
     background: string;

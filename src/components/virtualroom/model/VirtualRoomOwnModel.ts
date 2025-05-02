@@ -1,5 +1,5 @@
-import { LocalJsonStorage } from "../../lib/LocalJsonStorage";
-import { BeforeEnterRoom, EnterRoomAllowed, EnterRoomAllowedDetail, Madoi, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, ShareClass, TypedEventTarget } from "../../lib/madoi";
+import { LocalJsonStorage } from "../../../util/LocalJsonStorage";
+import { BeforeEnterRoom, EnterRoomAllowed, EnterRoomAllowedDetail, Madoi, PeerEntered, PeerEnteredDetail, PeerInfo, PeerLeaved, PeerLeavedDetail, PeerProfileUpdated, PeerProfileUpdatedDetail, ShareClass, TypedEventTarget } from "../../../madoi/madoi";
 import { AvatarModel } from "./AvatarModel";
 
 export interface SelfNameChangedDetail{

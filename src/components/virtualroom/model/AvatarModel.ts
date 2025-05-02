@@ -1,4 +1,4 @@
-import { TypedEventTarget } from "../../lib/madoi";
+import { TypedEventTarget } from "../../../madoi/madoi";
 
 export interface NameChangedDetail{
     name: string;

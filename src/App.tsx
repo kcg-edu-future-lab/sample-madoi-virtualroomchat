@@ -1,14 +1,14 @@
 import './App.css';
 import { createContext, useContext } from 'react';
-import { getLastPath } from './lib/Util';
+import { getLastPath } from './util/Util';
 import { v4 as uuidv4 } from 'uuid';
-import { LocalJsonStorage } from './lib/LocalJsonStorage';
+import { LocalJsonStorage } from './util/LocalJsonStorage';
 import { madoiKey, madoiUrl } from './keys';
-import { Madoi } from './lib/madoi';
-import { useMadoiModel } from './lib/reactHelpers';
-import { VirtualRoom } from './component/VirtualRoom';
-import { VirtualRoomOwnModel } from './component/model/VirtualRoomOwnModel';
-import { VirtualRoomModel } from './component/model/VirtualRoomModel';
+import { Madoi } from './madoi/madoi';
+import { useMadoiModel } from './madoi/reactHelpers';
+import { VirtualRoom } from './components/virtualroom/VirtualRoom';
+import { VirtualRoomOwnModel } from './components/virtualroom/model/VirtualRoomOwnModel';
+import { VirtualRoomModel } from './components/virtualroom/model/VirtualRoomModel';
 
 const roomId: string = `sample-madoi-vroom-${getLastPath(window.location.href)}-sdsakydfsfjo4`;
 const ls = new LocalJsonStorage<{id: string, background: string}>(`presence-${roomId}`);
